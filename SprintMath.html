@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SprintMath - Powered by Bhavya Mahendra</title>
+    <style>
+        body {
+            font-family: 'Arial Rounded MT Bold', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); /* Deep 2026 gaming theme */
+            color: #f8fafc;
+            text-align: center;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #game-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 40px;
+            border-radius: 25px;
+            border: 2px solid #38bdf8;
+            box-shadow: 0 0 20px #38bdf844;
+            max-width: 450px;
+            width: 90%;
+        }
+        h1 { font-size: 3rem; margin: 0; color: #38bdf8; text-shadow: 0 0 10px #38bdf8; }
+        .founder { font-size: 1.1rem; color: #fbbf24; margin-bottom: 30px; letter-spacing: 2px; }
+        input { padding: 12px; border-radius: 8px; border: none; margin-bottom: 20px; width: 80%; font-size: 1.1rem; }
+        button { 
+            padding: 12px 30px; background: #38bdf8; color: #0f172a; font-weight: bold; 
+            border: none; border-radius: 10px; cursor: pointer; font-size: 1.2rem; transition: 0.2s;
+        }
+        button:hover { background: #7dd3fc; transform: scale(1.05); }
+        #timer { font-size: 2.5rem; color: #f43f5e; font-weight: bold; }
+        #question { font-size: 3.5rem; margin: 20px 0; color: #ffffff; }
+        .last-player { margin-top: 25px; font-size: 0.9rem; color: #94a3b8; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="game-box">
+    <!-- FRONT PAGE -->
+    <div id="start-screen">
+        <div style="font-size: 60px;">⚡</div>
+        <h1>SprintMath</h1>
+        <div class="founder">FOUNDER: BHAVYA MAHENDRA</div>
+        <input type="text" id="playerName" placeholder="Enter Your Name">
+        <br>
+        <button onclick="startGame()">INITIATE GAME</button>
+        <p class="last-player">Last Player: <span id="saved-name">None</span></p>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="quiz-screen" class="hidden">
+        <div id="timer">15</div>
+        <div id="question-num">Question 1/10</div>
+        <div id="question"></div>
+        <input type="number" id="answerInput" placeholder="?" autocomplete="off">
+        <br>
+        <button onclick="submitAnswer()">Submit</button>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="result-screen" class="hidden">
+        <h2 id="final-status"></h2>
+        <p id="score-text"></p>
+        <button onclick="location.reload()">RETRY</button>
+    </div>
+</div>
+
+<script>
+    let score = 0, currentQ = 0, timeLeft = 15, currentAnswer, timer;
+
+    // 2026 Best Practice: Check local storage on load
+    window.onload = () => {
+        const lastPlayer = localStorage.getItem('sprintMathUser');
+        if (lastPlayer) document.getElementById('saved-name').innerText = lastPlayer;
+    };
+
+    function startGame() {
+        const nameInput = document.getElementById('playerName').value;
+        if (!nameInput) return alert("Please enter your name!");
+        
+        // Save name for next time
+        localStorage.setItem('sprintMathUser', nameInput);
+        
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+        
+        runTimer();
+        generateQuestion();
+    }
+
+    function runTimer() {
+        timer = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer').innerText = timeLeft;
+            if (timeLeft <= 0) finishGame();
+        }, 1000);
+    }
+
+    function generateQuestion() {
+        if (currentQ >= 10) return finishGame();
+        currentQ++;
+        document.getElementById('question-num').innerText = `Question ${currentQ}/10`;
+        
+        const num1 = Math.floor(Math.random() * 12) + 1;
+        const num2 = Math.floor(Math.random() * 12) + 1;
+        const ops = ['+', '-', '*'];
+        const op = ops[Math.floor(Math.random() * ops.length)];
+        
+        currentAnswer = eval(`${num1}${op}${num2}`);
+        document.getElementById('question').innerText = `${num1} ${op === '*' ? '×' : op} ${num2}`;
+        document.getElementById('answerInput').value = "";
+        document.getElementById('answerInput').focus();
+    }
+
+    function submitAnswer() {
+        const userVal = parseInt(document.getElementById('answerInput').value);
+        if (userVal === currentAnswer) score++;
+        generateQuestion();
+    }
+
+    // Allow pressing "Enter" to submit
+    document.getElementById('answerInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') submitAnswer();
+    });
+
+    function finishGame() {
+        clearInterval(timer);
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+        
+        let status = "";
+        if (score >= 9) status = "EXCELLENT";
+        else if (score >= 6) status = "VERY GOOD";
+        else status = "TRY NEXT TIME";
+        
+        document.getElementById('final-status').innerText = status;
+        document.getElementById('score-text').innerText = `You got ${score} out of 10!`;
+    }
+</script>
+
+</body>
+</html>
